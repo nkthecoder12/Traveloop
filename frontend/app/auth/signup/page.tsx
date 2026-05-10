@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/Button"
-import { Globe, Check, Camera } from "lucide-react"
+import { Globe, Check, Camera, Loader2 } from "lucide-react"
 import { FaGithub, FaGoogle } from "react-icons/fa6"
 import { cn } from "@/lib/utils"
 
@@ -19,12 +19,66 @@ const preferences = [
 ]
 
 export default function SignupPage() {
-  const [selectedPrefs, setSelectedPrefs] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    city: "",
+    country: "",
+    addInfo: "",
+    password: "",
+    confirmPassword: ""
+  })
 
-  const togglePreference = (id: string) => {
-    setSelectedPrefs(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-    )
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email,
+          password: formData.password,
+          // Other fields can be sent if backend supports them or handled later
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed")
+      }
+
+      console.log("Registration successful:", data)
+      window.location.href = "/auth/login"
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -58,13 +112,27 @@ export default function SignupPage() {
           <p className="text-sky/60 text-[10px]">Start your journey with Traveloop today.</p>
         </div>
 
-        <form className="space-y-3">
+        <form className="space-y-3" onSubmit={handleSubmit}>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="p-2 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-medium text-center"
+            >
+              {error}
+            </motion.div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">First Name</label>
               <input
                 type="text"
+                name="firstName"
                 placeholder="First Name"
+                required
+                value={formData.firstName}
+                onChange={handleChange}
                 className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
               />
             </div>
@@ -72,7 +140,11 @@ export default function SignupPage() {
               <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">Last Name</label>
               <input
                 type="text"
+                name="lastName"
                 placeholder="Last Name"
+                required
+                value={formData.lastName}
+                onChange={handleChange}
                 className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
               />
             </div>
@@ -83,7 +155,11 @@ export default function SignupPage() {
               <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">Email Address</label>
               <input
                 type="email"
+                name="email"
                 placeholder="Email Address"
+                required
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
               />
             </div>
@@ -91,7 +167,37 @@ export default function SignupPage() {
               <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">Phone Number</label>
               <input
                 type="tel"
-                placeholder="Phone Number"
+                name="phone"
+                placeholder="Phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">New Password</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
               />
             </div>
@@ -102,7 +208,10 @@ export default function SignupPage() {
               <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">City</label>
               <input
                 type="text"
+                name="city"
                 placeholder="City"
+                value={formData.city}
+                onChange={handleChange}
                 className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
               />
             </div>
@@ -110,23 +219,40 @@ export default function SignupPage() {
               <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">Country</label>
               <input
                 type="text"
+                name="country"
                 placeholder="Country"
+                value={formData.country}
+                onChange={handleChange}
                 className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">Additional Information</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-sky/60 ml-1">Additional Info</label>
             <input
               type="text"
-              placeholder="e.g. Travel preferences, diet..."
+              name="addInfo"
+              placeholder="Travel preferences..."
+              value={formData.addInfo}
+              onChange={handleChange}
               className="w-full h-9 px-3 rounded-lg border border-border focus:outline-none focus:border-accent bg-muted/20 text-xs font-medium"
             />
           </div>
 
-          <Button className="w-full h-10 text-xs shadow-md bg-primary hover:bg-primary/90 font-bold rounded-lg mt-2">
-            Register Users
+          <Button 
+            type="submit"
+            disabled={isLoading}
+            className="w-full h-10 text-xs shadow-md bg-primary hover:bg-primary/90 font-bold rounded-lg mt-2 flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Creating Account...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </Button>
         </form>
 

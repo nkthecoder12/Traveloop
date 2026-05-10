@@ -113,17 +113,8 @@ export default function DashboardLayout({
           </button>
         </div>
 
-        {!isCollapsed && (
-          <div className="p-6 mt-auto">
-            <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-              <p className="text-xs text-sky/60 mb-2 font-bold uppercase tracking-widest">Pro Plan</p>
-              <p className="text-sm font-medium mb-4">Unlimited multi-city trips and AI exports.</p>
-              <button className="w-full bg-accent text-primary text-xs font-bold py-2 rounded-lg hover:bg-accent/90 transition-colors">
-                Upgrade Now
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Sidebar Footer or Spacer */}
+        <div className="mt-auto" />
       </motion.aside>
 
       {/* Main Content Area */}
