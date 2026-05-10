@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String
+  bio         String?
+  avatar      String?
+  language    String   @default("english")
+  privacy     String   @default("public")
+  notifications Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  trips       Trip[]
+  notes       Note[]
+  
+  @@map("users")
+}
+
+model Trip {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  budget      Float?
+  coverPhoto  String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops       TripStop[]
+  notes       Note[]
+  sharedUrls  SharedUrl[]
+  packingItems PackingItem[]
+
+  @@map("trips")
+}
+
+model TripStop {
+  id          String   @id @default(cuid())
+  city        String
+  country     String
+  startDate   DateTime
+  endDate     DateTime
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tripId      String
+  trip        Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  activities  Activity[]
+
+  @@map("trip_stops")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String
+  duration    String?
+  cost        Float?
+  time        String?
+  date        DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  stopId      String
+  stop        TripStop   @relation(fields: [stopId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId      String?
+  trip        Trip?      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
+}
+
+model PackingItem {
+  id          String   @id @default(cuid())
+  name        String
+  quantity    Int      @default(1)
+  packed      Boolean  @default(false)
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tripId      String
+  trip        Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("packing_items")
+}
+
+model SharedUrl {
+  id          String   @id @default(cuid())
+  url         String   @unique
+  token       String   @unique
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  // Relations
+  tripId      String
+  trip        Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("shared_urls")
+}
+
+model City {
+  id          String   @id @default(cuid())
+  name        String
+  country     String
+  costIndex   String
+  popularity  Int
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, country])
+  @@map("cities")
+}
