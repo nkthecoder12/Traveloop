@@ -43,18 +43,18 @@ const validateUserLogin = [
 // Trip creation validation
 const validateTripCreation = [
   body('name')
+    .optional()
     .trim()
     .isLength({ min: 1, max: 100 })
-    .withMessage('Trip name is required and must be less than 100 characters'),
+    .withMessage('Trip name must be less than 100 characters'),
   body('startDate')
+    .optional()
     .isISO8601()
     .withMessage('Please provide a valid start date'),
   body('endDate')
+    .optional()
     .isISO8601()
     .withMessage('Please provide a valid end date'),
-  body('userId')
-    .notEmpty()
-    .withMessage('User ID is required'),
   validateRequest
 ];
 
@@ -65,13 +65,14 @@ const validateTripStop = [
     .isLength({ min: 1 })
     .withMessage('City is required'),
   body('country')
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage('Country is required'),
+    .optional()
+    .trim(),
   body('startDate')
+    .optional()
     .isISO8601()
     .withMessage('Please provide a valid start date'),
   body('endDate')
+    .optional()
     .isISO8601()
     .withMessage('Please provide a valid end date'),
   validateRequest

@@ -4,10 +4,17 @@ import React from "react"
 import { Share2, Download, Heart, Save } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 
-export const ActionButtons: React.FC = () => {
+interface ActionButtonsProps {
+  onSave?: () => void;
+}
+
+export const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave }) => {
   return (
     <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 bg-white/80 backdrop-blur-xl border border-border/50 p-3 rounded-[2rem] shadow-2xl flex items-center gap-4">
-      <Button className="h-14 px-8 rounded-2xl bg-primary text-white font-black shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+      <Button 
+        onClick={onSave}
+        className="h-14 px-8 rounded-2xl bg-primary text-white font-black shadow-lg hover:scale-105 transition-all flex items-center gap-2"
+      >
         <Save size={18} /> Save to My Trips
       </Button>
       <div className="h-10 w-[1px] bg-border/50 mx-1" />
