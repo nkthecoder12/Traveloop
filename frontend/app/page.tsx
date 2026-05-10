@@ -77,13 +77,14 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Trip Features</h3>
             <div className="space-y-2">
-              <Link href="/trips/[id]/itinerary" className="block text-indigo-600 hover:text-indigo-800">Itinerary</Link>
-              <Link href="/trips/[id]/builder" className="block text-indigo-600 hover:text-indigo-800">Builder</Link>
-              <Link href="/trips/[id]/budget" className="block text-indigo-600 hover:text-indigo-800">Budget</Link>
-              <Link href="/trips/[id]/packing" className="block text-indigo-600 hover:text-indigo-800">Packing</Link>
-              <Link href="/trips/[id]/notes" className="block text-indigo-600 hover:text-indigo-800">Notes</Link>
-              <Link href="/trips/[id]/share" className="block text-indigo-600 hover:text-indigo-800">Share</Link>
+              <div className="text-gray-600">Itinerary View (from trip details)</div>
+              <div className="text-gray-600">Trip Builder (from trip details)</div>
+              <div className="text-gray-600">Budget Planner (from trip details)</div>
+              <div className="text-gray-600">Packing Lists (from trip details)</div>
+              <div className="text-gray-600">Travel Notes (from trip details)</div>
+              <div className="text-gray-600">Share Trip (from trip details)</div>
             </div>
+            <p className="text-sm text-gray-500 mt-2">Access these features from individual trip pages</p>
           </div>
 
           {/* Search */}
