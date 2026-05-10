@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 
 const settingsSections = [
   { id: "profile", label: "Profile Information", icon: User, desc: "Manage your personal details and travel bio." },
@@ -33,9 +34,33 @@ const settingsSections = [
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile")
   const router = useRouter()
+  const { user, logout, updateProfile } = useAuth()
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  const handleLogout = () => {
-    // In a real app, clear session/cookies here
+  // Local state for form fields
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    bio: user?.bio || "Avid traveler, mountain lover, and photography enthusiast.",
+  })
+
+  const handleUpdateProfile = async () => {
+    setIsUpdating(true)
+    try {
+      await updateProfile({
+        name: formData.name,
+        bio: formData.bio,
+      })
+      alert("Profile updated successfully!")
+    } catch (error) {
+      alert("Failed to update profile")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    await logout()
     router.push("/auth/login")
   }
 
@@ -96,7 +121,11 @@ export default function SettingsPage() {
                      <div className="flex flex-col md:flex-row items-center gap-10">
                         <div className="relative group shrink-0">
                            <div className="w-32 h-32 rounded-full overflow-hidden border-8 border-muted shadow-2xl">
-                              <img src="https://i.pravatar.cc/150?u=alex" alt="Avatar" className="w-full h-full object-cover" />
+                              <img 
+                                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=17C7D1&color=fff`} 
+                                alt="Avatar" 
+                                className="w-full h-full object-cover" 
+                              />
                            </div>
                            <button className="absolute bottom-1 right-1 p-2 bg-accent text-primary rounded-xl shadow-lg hover:scale-110 transition-transform">
                               <Camera size={16} />
@@ -104,16 +133,24 @@ export default function SettingsPage() {
                         </div>
                         <div className="flex-1 text-center md:text-left">
                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                              <h3 className="text-3xl font-bold text-primary font-heading">Alex Johnson</h3>
-                              <Button className="h-10 bg-primary text-white rounded-xl font-bold px-6">Save Changes</Button>
+                              <h3 className="text-3xl font-bold text-primary font-heading">{user?.name}</h3>
+                              <Button 
+                                onClick={handleUpdateProfile}
+                                disabled={isUpdating}
+                                className="h-10 bg-primary text-white rounded-xl font-bold px-6"
+                              >
+                                {isUpdating ? "Saving..." : "Save Changes"}
+                              </Button>
                            </div>
-                           <p className="text-sky/60 font-medium mb-6 leading-relaxed">
-                              Avid traveler, mountain lover, and photography enthusiast. Always looking for the next hidden gem in India.
-                           </p>
+                           <textarea 
+                              value={formData.bio || ""}
+                              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                              className="w-full bg-transparent border-none focus:ring-0 text-sky/60 font-medium mb-6 leading-relaxed resize-none h-20"
+                              placeholder="Tell us about your travel style..."
+                           />
                            <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                              <div className="bg-muted px-4 py-2 rounded-xl text-[10px] font-black text-sky/60 uppercase tracking-widest">12 Trips</div>
-                              <div className="bg-muted px-4 py-2 rounded-xl text-[10px] font-black text-sky/60 uppercase tracking-widest">24 Cities</div>
-                              <div className="bg-muted px-4 py-2 rounded-xl text-[10px] font-black text-sky/60 uppercase tracking-widest">Premium Member</div>
+                              <div className="bg-muted px-4 py-2 rounded-xl text-[10px] font-black text-sky/60 uppercase tracking-widest">Active Member</div>
+                              <div className="bg-muted px-4 py-2 rounded-xl text-[10px] font-black text-sky/60 uppercase tracking-widest">{user?.role}</div>
                            </div>
                         </div>
                      </div>
@@ -121,17 +158,23 @@ export default function SettingsPage() {
                </Card>
 
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                     <label className="text-xs font-black uppercase tracking-widest text-primary/30 ml-1">First Name</label>
-                     <input type="text" defaultValue="Alex" className="w-full h-12 px-6 rounded-xl bg-white border border-border text-sm font-bold text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-xs font-black uppercase tracking-widest text-primary/30 ml-1">Last Name</label>
-                     <input type="text" defaultValue="Johnson" className="w-full h-12 px-6 rounded-xl bg-white border border-border text-sm font-bold text-primary" />
+                  <div className="space-y-2 sm:col-span-2">
+                     <label className="text-xs font-black uppercase tracking-widest text-primary/30 ml-1">Full Name</label>
+                     <input 
+                       type="text" 
+                       value={formData.name || ""} 
+                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                       className="w-full h-12 px-6 rounded-xl bg-white border border-border text-sm font-bold text-primary" 
+                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
                      <label className="text-xs font-black uppercase tracking-widest text-primary/30 ml-1">Email Address</label>
-                     <input type="email" defaultValue="alex.j@traveloop.com" className="w-full h-12 px-6 rounded-xl bg-white border border-border text-sm font-bold text-primary" />
+                     <input 
+                       type="email" 
+                       value={user?.email || ""} 
+                       readOnly
+                       className="w-full h-12 px-6 rounded-xl bg-muted/30 border border-border text-sm font-bold text-sky/60 cursor-not-allowed" 
+                     />
                   </div>
                </div>
              </div>
