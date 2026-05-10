@@ -1,127 +1,202 @@
+"use client"
+
+import React, { useState } from "react"
+import { motion, Reorder, AnimatePresence } from "framer-motion"
+import { Card, CardContent } from "@/components/ui/Card"
+import { Button } from "@/components/ui/Button"
+import { 
+  MapPin, 
+  Calendar, 
+  Plus, 
+  Trash2, 
+  GripVertical, 
+  Image as ImageIcon,
+  ArrowRight,
+  Plane,
+  Clock,
+  Sparkles
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+
+interface CityStop {
+  id: string
+  name: string
+  duration: string
+  activities: string[]
+}
+
 export default function CreateTripPage() {
+  const [cities, setCities] = useState<CityStop[]>([
+    { id: "1", name: "Paris, France", duration: "3 Days", activities: ["Visit Louvre", "Eiffel Tower"] },
+  ])
+
+  const addCity = () => {
+    const newCity: CityStop = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: "",
+      duration: "1 Day",
+      activities: []
+    }
+    setCities([...cities, newCity])
+  }
+
+  const removeCity = (id: string) => {
+    if (cities.length > 1) {
+      setCities(cities.filter(c => c.id !== id))
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Trip</h1>
-          <p className="mt-2 text-gray-600">Start planning your next adventure</p>
+    <div className="max-w-4xl mx-auto pb-20">
+      <div className="mb-12">
+        <h1 className="text-3xl font-bold font-heading text-primary mb-2">Design Your Journey</h1>
+        <p className="text-sky/80 text-lg">Add stops, reorder cities, and let AI help you with the details.</p>
+      </div>
+
+      <div className="space-y-8">
+        {/* Basic Trip Info Card */}
+        <Card className="border-none shadow-sm overflow-hidden">
+          <div className="h-32 bg-primary relative">
+             <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
+             <div className="absolute inset-0 flex items-center px-8">
+                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors">
+                  <ImageIcon className="text-white w-6 h-6" />
+                </div>
+                <div className="ml-6">
+                  <input 
+                    type="text" 
+                    placeholder="Untilted Trip" 
+                    className="bg-transparent border-none text-2xl font-bold text-white placeholder-white/40 focus:outline-none w-full"
+                  />
+                  <p className="text-white/60 text-sm font-medium">Click to set trip title and cover image</p>
+                </div>
+             </div>
+          </div>
+          <CardContent className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+             <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-sky/60">Start Date</label>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border">
+                  <Calendar className="w-4 h-4 text-accent" />
+                  <input type="date" className="bg-transparent border-none focus:outline-none text-sm text-primary font-medium" />
+                </div>
+             </div>
+             <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-sky/60">Travel Style</label>
+                <select className="w-full h-[46px] px-3 rounded-xl bg-muted/50 border border-border text-sm text-primary font-medium focus:outline-none focus:border-accent">
+                  <option>Luxury</option>
+                  <option>Adventure</option>
+                  <option>Budget</option>
+                  <option>Family</option>
+                </select>
+             </div>
+             <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-sky/60">Total Budget</label>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border">
+                  <span className="text-accent font-bold">$</span>
+                  <input type="number" placeholder="0.00" className="bg-transparent border-none focus:outline-none text-sm text-primary font-medium w-full" />
+                </div>
+             </div>
+          </CardContent>
+        </Card>
+
+        {/* Multi-City Builder */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold font-heading text-primary">Route Planner</h2>
+            <Button variant="outline" size="sm" onClick={addCity} className="rounded-lg border-accent text-accent hover:bg-accent hover:text-white">
+              <Plus className="w-4 h-4 mr-1" /> Add Stop
+            </Button>
+          </div>
+
+          <Reorder.Group axis="y" values={cities} onReorder={setCities} className="space-y-4">
+            <AnimatePresence>
+              {cities.map((city, index) => (
+                <Reorder.Item
+                  key={city.id}
+                  value={city}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="relative"
+                >
+                  <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-6 flex items-center gap-6">
+                      <div className="cursor-grab active:cursor-grabbing text-sky/40 hover:text-primary transition-colors">
+                        <GripVertical size={20} />
+                      </div>
+                      
+                      <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center font-bold font-heading">
+                        {index + 1}
+                      </div>
+
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sky/40" />
+                          <input 
+                            type="text" 
+                            placeholder="Search City..." 
+                            className="w-full h-12 pl-10 pr-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-sm font-medium"
+                            defaultValue={city.name}
+                          />
+                        </div>
+                        <div className="relative">
+                          <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sky/40" />
+                          <input 
+                            type="text" 
+                            placeholder="Duration (e.g. 3 Days)" 
+                            className="w-full h-12 pl-10 pr-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-sm font-medium"
+                            defaultValue={city.duration}
+                          />
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={() => removeCity(city.id)}
+                        className="p-2 text-sky/40 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </CardContent>
+                  </Card>
+                  
+                  {index < cities.length - 1 && (
+                    <div className="absolute left-[78px] -bottom-5 w-0.5 h-6 bg-border flex items-center justify-center">
+                      <div className="p-1 bg-white border border-border rounded-full">
+                        <Plane size={10} className="text-sky/40 rotate-180" />
+                      </div>
+                    </div>
+                  )}
+                </Reorder.Item>
+              ))}
+            </AnimatePresence>
+          </Reorder.Group>
         </div>
 
-        <div className="bg-white shadow rounded-lg">
-          <form className="space-y-6 p-6">
-            <div>
-              <label htmlFor="trip-name" className="block text-sm font-medium text-gray-700">
-                Trip Name
-              </label>
-              <input
-                type="text"
-                id="trip-name"
-                name="trip-name"
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="European Adventure 2024"
-              />
-            </div>
+        {/* AI Generator CTA */}
+        <Card className="border-none bg-accent/5 border-2 border-dashed border-accent/30 p-8 text-center group cursor-pointer hover:bg-accent/10 transition-colors">
+           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+              <Sparkles className="text-accent w-8 h-8" />
+           </div>
+           <h3 className="text-xl font-bold text-primary mb-2">Let AI Optimize Your Route</h3>
+           <p className="text-sky/80 text-sm mb-6 max-w-sm mx-auto">
+             Our AI will suggest the best sequence for your cities and find the most efficient transportation options.
+           </p>
+           <Button variant="secondary" className="bg-primary text-white border-none h-12 px-8">
+              Generate AI Itinerary
+           </Button>
+        </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  id="start-date"
-                  name="start-date"
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  id="end-date"
-                  name="end-date"
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Trip Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                rows={4}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Describe your dream trip..."
-              />
-            </div>
-
-            <div>
-              <label htmlFor="budget" className="block text-sm font-medium text-gray-700">
-                Estimated Budget (Optional)
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-sm">$</span>
-                </div>
-                <input
-                  type="number"
-                  id="budget"
-                  name="budget"
-                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-                  placeholder="5000"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cover Photo (Optional)
-              </label>
-              <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <div className="w-12 h-12 mx-auto text-gray-400">
-                    <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  </div>
-                  <div className="flex text-sm text-gray-600">
-                    <label
-                      htmlFor="photo-upload"
-                      className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                    >
-                      <span>Upload a file</span>
-                      <input id="photo-upload" name="photo-upload" type="file" className="sr-only" />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Create Trip
-              </button>
-            </div>
-          </form>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-8 border-t border-border">
+           <Button variant="ghost" className="text-sky/60 font-bold hover:text-primary">
+              Save Draft
+           </Button>
+           <div className="flex gap-4">
+              <Button variant="outline" className="border-border px-8">Cancel</Button>
+              <Button className="px-10 shadow-xl">
+                 Finish Trip Plan <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+           </div>
         </div>
       </div>
     </div>
