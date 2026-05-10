@@ -27,6 +27,7 @@ model User {
   // Relations
   trips       Trip[]
   notes       Note[]
+  refreshTokens RefreshToken[]
   
   @@map("users")
 }
@@ -141,8 +142,8 @@ model City {
   id          String   @id @default(cuid())
   name        String
   country     String
-  costIndex   String
-  popularity  Int
+  costIndex   String?  @default("Medium")
+  popularity  Int      @default(50)
   description String?
   imageUrl    String?
   createdAt   DateTime @default(now())
@@ -150,4 +151,16 @@ model City {
 
   @@unique([name, country])
   @@map("cities")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }
