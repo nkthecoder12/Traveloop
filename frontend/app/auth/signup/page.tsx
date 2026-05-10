@@ -4,10 +4,12 @@ import React, { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Globe, Check, Camera, Loader2 } from "lucide-react"
 import { FaGithub, FaGoogle } from "react-icons/fa6"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/AuthContext"
 
 const preferences = [
   { id: "adventure", label: "Adventure", icon: "🧗" },
@@ -19,8 +21,8 @@ const preferences = [
 ]
 
 export default function SignupPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  const { register, isLoading, error, clearError } = useAuth()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -42,42 +44,25 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    clearError()
 
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
+      // This will be handled by the auth context
       return
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: `${formData.firstName} ${formData.lastName}`.trim(),
-          email: formData.email,
-          password: formData.password,
-          // Other fields can be sent if backend supports them or handled later
-        }),
+      await register({
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        password: formData.password,
+        role: 'CUSTOMER'
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed")
-      }
-
-      console.log("Registration successful:", data)
-      window.location.href = "/auth/login"
+      router.push("/dashboard")
     } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setIsLoading(false)
+      // Error is handled by the auth context
+      console.error("Registration error:", err)
     }
   }
 
