@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💻 Traveloop Frontend
 
-## Getting Started
+This directory contains the high-fidelity frontend for **Traveloop**, built with Next.js 15, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+> [!NOTE]
+> For the complete project documentation, including architecture, API, and setup guides, please refer to the [Root README](../README.md).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Quick Start
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Configure Environment**:
+   Create a `.env.local` file:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5000/api
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+## 🛠️ Key Technologies
+- **Next.js 15 (App Router)**: Utilizing React 19 features and Turbopack for optimized builds.
+- **TypeScript**: Full-stack type safety for data models and API responses.
+- **Tailwind CSS**: Custom design system for premium, responsive UI.
+- **Framer Motion**: Advanced micro-animations and page transitions.
+- **Lucide React**: Stylized iconography across the dashboard and landing pages.
+- **Recharts**: Data visualization for financial and travel analytics.
 
-To learn more about Next.js, take a look at the following resources:
+## 🏗️ Technical Implementation
+- **Bento-Grid Layout**: Implementation of a modern bento-grid system for complex dashboard visualization.
+- **Unified Trip Builder**: Hydration pattern for AI-generated trips, allowing the same interface for manual and AI flows.
+- **Image Optimization**: High-performance image handling using `next/image` with remote pattern configurations.
+- **Optimistic UI**: Real-time profile and settings updates for a seamless user experience.
+- **Global State**: Centralized *AuthContext* and *apiClient* with automated error interceptors.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📂 Structure Highlights
+- `/app`: Main dashboard, trip builder, and authentication pages.
+- `/components`: Reusable UI modules (itinerary builders, maps, charts).
+- `/contexts`: Global state for authentication and AI orchestration.
+- `/services`: Axios-based clients for backend communication.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏗️ Unified Trip Builder
+The frontend implements a **Hydration Pattern** for AI trips. 
+1. The AI Service returns a structured JSON.
+2. The `TripContext` hydrates this JSON into the **Unified Trip Builder**.
+3. The user interacts with the same interface regardless of whether the trip was started manually or via AI.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+[← Back to Main Project Documentation](../README.md)
