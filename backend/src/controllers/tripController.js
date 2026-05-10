@@ -3,13 +3,7 @@ const { prisma } = require('../config/database');
 // Get all trips for a user
 const getTrips = async (req, res, next) => {
   try {
-    const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({ 
-        error: 'User ID is required' 
-      });
-    }
+    const userId = req.user.id;
 
     const trips = await prisma.trip.findMany({
       where: { userId },
@@ -79,32 +73,71 @@ const getTrip = async (req, res, next) => {
   }
 };
 
-// Create new trip
+// Create new trip (with optional nested stops and activities)
 const createTrip = async (req, res, next) => {
   try {
-    const { name, description, startDate, endDate, budget, userId, coverPhoto } = req.body;
+    const { name, title, description, startDate, endDate, budget, budgetAmount, coverPhoto, stops, days: aiDays, travelStyle, style } = req.body;
+    const userId = req.user.id;
+
+    // Support both 'name' and 'title' (from AI)
+    const tripName = name || title || "Untitled Trip";
+    
+    // Handle budget (itinerary has nested budget object)
+    const finalBudget = budget?.total || budgetAmount || (typeof budget === 'number' ? budget : null);
+
+    // Support both 'stops' and 'days' (from AI)
+    const tripStops = stops || aiDays;
+    
+    // Support both 'travelStyle' and 'style'
+    const finalStyle = travelStyle || style;
 
     const trip = await prisma.trip.create({
       data: {
-        name,
-        description,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        budget: budget ? parseFloat(budget) : null,
+        name: tripName,
+        description: description || `Journey to ${req.body.destination || 'a new place'}`,
+        startDate: startDate ? new Date(startDate) : new Date(),
+        endDate: endDate ? new Date(endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        budget: finalBudget ? parseFloat(finalBudget) : null,
         userId,
-        coverPhoto
+        coverPhoto,
+        travelStyle: finalStyle,
+        stops: tripStops ? {
+          create: tripStops.map((stop, index) => ({
+            city: stop.city || stop.name || "Unknown City",
+            country: stop.country || "Unknown",
+            startDate: stop.startDate ? new Date(stop.startDate) : new Date(),
+            endDate: stop.endDate ? new Date(stop.endDate) : new Date(),
+            order: stop.order || stop.dayNumber || (index + 1),
+            activities: (stop.activities || (stop.morning && [...stop.morning, ...stop.afternoon, ...stop.evening])) ? {
+              create: (stop.activities || [...(stop.morning || []), ...(stop.afternoon || []), ...(stop.evening || [])]).map(activity => ({
+                name: activity.name || activity.title,
+                description: activity.description || "",
+                type: activity.type || "activity",
+                duration: activity.duration?.toString() || "1 hour",
+                cost: activity.cost || activity.estimatedCost ? parseFloat(activity.cost || activity.estimatedCost) : null,
+                time: activity.time
+              }))
+            } : undefined
+          }))
+        } : undefined
       },
       include: {
-        stops: true,
+        stops: {
+          include: {
+            activities: true
+          }
+        },
         notes: true
       }
     });
 
     res.status(201).json({
+      success: true,
       message: 'Trip created successfully',
       trip
     });
   } catch (error) {
+    console.error('Create trip error:', error);
     next(error);
   }
 };

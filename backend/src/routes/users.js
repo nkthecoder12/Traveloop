@@ -3,6 +3,7 @@ const UserService = require('../services/userService');
 const ResponseFormatter = require('../utils/responseFormatter');
 const ErrorHandler = require('../utils/errorHandler');
 const { authenticate, isAdmin } = require('../middleware/auth');
+const { prisma } = require('../config/database');
 const multer = require('multer');
 
 // Configure multer for file uploads

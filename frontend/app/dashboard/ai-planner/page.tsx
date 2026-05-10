@@ -250,7 +250,16 @@ export default function AIPlannerPage() {
                </div>
             </div>
 
-            <ActionButtons />
+            <ActionButtons onSave={async () => {
+              try {
+                const { tripService } = await import("@/services/tripService");
+                await tripService.createTrip(itinerary as any);
+                alert("Trip saved successfully!");
+                window.location.href = "/dashboard/trips";
+              } catch (err: any) {
+                alert("Failed to save trip: " + err.message);
+              }
+            }} />
           </motion.div>
         )}
       </AnimatePresence>
