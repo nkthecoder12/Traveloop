@@ -1,5 +1,5 @@
 const express = require('express');
-const { authMiddleware } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const { validateTripCreation, validateTripStop, validateActivity } = require('../middleware/validation');
 const {
   getTrips,
@@ -14,16 +14,14 @@ const {
 
 const router = express.Router();
 
-// Public routes (for shared trips)
-router.get('/', getTrips);
-router.get('/:id', getTrip);
-router.get('/:id/budget', getTripBudget);
-
 // Protected routes
-router.post('/', authMiddleware, validateTripCreation, createTrip);
-router.put('/:id', authMiddleware, updateTrip);
-router.delete('/:id', authMiddleware, deleteTrip);
-router.post('/:id/stops', authMiddleware, validateTripStop, addTripStop);
-router.post('/:tripId/stops/:stopId/activities', authMiddleware, validateActivity, addActivity);
+router.get('/', authenticate, getTrips);
+router.get('/:id', authenticate, getTrip);
+router.get('/:id/budget', authenticate, getTripBudget);
+router.post('/', authenticate, validateTripCreation, createTrip);
+router.put('/:id', authenticate, updateTrip);
+router.delete('/:id', authenticate, deleteTrip);
+router.post('/:id/stops', authenticate, validateTripStop, addTripStop);
+router.post('/:tripId/stops/:stopId/activities', authenticate, validateActivity, addActivity);
 
 module.exports = router;

@@ -91,130 +91,51 @@ TRIP DETAILS:
 - Interests: ${interests.length > 0 ? interests.join(', ') : 'General sightseeing and local experiences'}
 
 REQUIREMENTS:
-1. Create a day-by-day itinerary with specific activities, timing, and locations
-2. Include accommodation recommendations within budget
-3. Suggest transportation options between destinations
-4. Recommend authentic local dining experiences
-5. Include must-visit attractions and hidden gems
-6. Provide budget breakdown by category
-7. Include practical travel tips and cultural insights
-8. Suggest packing checklist based on destination and activities
-9. Consider seasonal weather and local events
+1. Create a day-by-day itinerary with specific activities for MORNING, AFTERNOON, and EVENING.
+2. Include estimated costs for each activity and daily totals.
+3. Provide AI insights (tips, weather advice, highlights).
+4. Include a packing checklist.
+5. Suggest a catchy trip name.
 
 RESPONSE FORMAT:
 Return a structured JSON response with the following exact format:
 
 {
-  "tripName": "Catchy trip title",
-  "destinations": [
-    {
-      "name": "City/Country name",
-      "description": "Brief description",
-      "imageUrl": "suggested-image-url",
-      "coordinates": {"lat": 0.0, "lng": 0.0}
-    }
-  ],
+  "id": "unique-id",
+  "name": "Trip Name",
+  "destination": "${destination}",
+  "startDate": "ISO-Date",
+  "endDate": "ISO-Date",
+  "style": "${travelStyle}",
   "budget": {
     "total": ${budget},
-    "currency": "USD",
-    "breakdown": {
-      "accommodation": 0,
-      "transportation": 0,
-      "food": 0,
-      "activities": 0,
-      "miscellaneous": 0
-    }
+    "transport": 0,
+    "stay": 0,
+    "food": 0,
+    "activities": 0,
+    "currency": "INR"
   },
-  "itinerary": [
+  "days": [
     {
-      "day": 1,
-      "date": "YYYY-MM-DD",
-      "theme": "Day theme",
-      "activities": [
-        {
-          "time": "09:00",
-          "title": "Activity name",
-          "description": "Detailed description",
-          "location": "Specific location",
-          "duration": "2 hours",
-          "cost": 0,
-          "type": "sightseeing|dining|transportation|accommodation",
-          "tips": ["Practical tips"]
-        }
-      ]
+      "dayNumber": 1,
+      "date": "Weekday, Day Month",
+      "city": "${destination}",
+      "theme": "Day Theme",
+      "estimatedCost": 0,
+      "morning": [{ "id": "1", "time": "09:00 AM", "name": "Activity", "type": "activity", "cost": 0, "duration": "2h", "location": "Loc" }],
+      "afternoon": [],
+      "evening": [],
+      "stayInfo": { "name": "Hotel", "location": "Loc", "cost": 0 },
+      "transportInfo": { "type": "Car", "cost": 0, "notes": "..." }
     }
   ],
-  "accommodations": [
-    {
-      "name": "Hotel/Resort name",
-      "type": "hotel|resort|hostel|airbnb",
-      "pricePerNight": 0,
-      "rating": 4.5,
-      "location": "Area/Neighborhood",
-      "amenities": ["WiFi", "Breakfast", "Pool"],
-      "bookingUrl": "suggested-booking-url"
-    }
-  ],
-  "transportation": {
-    "flights": [
-      {
-        "from": "Departure city",
-        "to": "Destination",
-        "airline": "Airline name",
-        "price": 0,
-        "duration": "Xh Ym",
-        "bookingTips": "Best time to book, airline preferences"
-      }
-    ],
-    "local": {
-      "recommendations": ["Public transport", "Rental car", "Walking tours"],
-      "estimatedCosts": {
-        "publicTransit": 0,
-        "taxi": 0,
-        "rental": 0
-      }
-    }
-  },
-  "dining": [
-    {
-      "name": "Restaurant/Experience name",
-      "cuisine": "Local/international",
-      "priceRange": "$-$$",
-      "mustTry": ["Signature dishes"],
-      "location": "Area/Address",
-      "reservationRequired": true
-    }
-  ],
-  "aiInsights": {
-    "bestTimeToVisit": "Optimal travel months",
-    "weatherConsiderations": "Seasonal weather advice",
-    "culturalTips": ["Important cultural norms"],
-    "budgetOptimization": ["Money-saving tips"],
-    "hiddenGems": ["Lesser-known attractions"]
-  },
-  "packingChecklist": {
-    "essentials": ["Passport", "Visa", "Insurance"],
-    "clothing": ["Weather-appropriate clothing"],
-    "electronics": ["Chargers", "Adapters", "Camera"],
-    "health": ["Medications", "First-aid"],
-    "documents": ["Copies of important documents"]
-  },
-  "recommendations": {
-    "activities": ["Must-do experiences"],
-    "booking": ["When to book flights/hotels"],
-    "safety": ["Important safety information"],
-    "money": ["Currency exchange, tipping culture"]
-  }
+  "insights": [{ "id": "1", "type": "tip", "title": "...", "content": "..." }],
+  "packingList": [{ "id": "1", "item": "...", "category": "...", "essential": true, "checked": false }]
 }
 
 IMPORTANT: 
-- Ensure all costs are realistic and within the $${budget} budget
-- Provide specific, actionable recommendations
-- Include both popular and unique experiences
-- Consider the ${travelStyle} travel style throughout
-- Make the itinerary practical and achievable
-
-Please respond with valid JSON only, no additional text or explanations.`;
+- Ensure all costs are realistic and within the $${budget} budget.
+- Please respond with valid JSON only, no additional text or explanations.`;
   }
 
   /**
@@ -236,133 +157,107 @@ Please respond with valid JSON only, no additional text or explanations.`;
    */
   static generateMockResponse(prompt) {
     // Extract key information from prompt for realistic mock response
-    const destinationMatch = prompt.match(/Destination: ([^,]+)/);
+    const destinationMatch = prompt.match(/Destination: ([^, \n]+)/);
     const daysMatch = prompt.match(/Duration: (\d+) days/);
     const budgetMatch = prompt.match(/Budget: \$(\d+)/);
+    const styleMatch = prompt.match(/Travel Style: ([^, \n]+)/);
     
     const destination = destinationMatch ? destinationMatch[1].trim() : 'Unknown Destination';
     const days = daysMatch ? parseInt(daysMatch[1]) : 5;
     const budget = budgetMatch ? parseFloat(budgetMatch[1]) : 2000;
+    const travelStyle = styleMatch ? styleMatch[1].trim() : 'Balanced';
+
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + (days - 1) * 24 * 60 * 60 * 1000);
 
     return {
-      tripName: `${days}-Day ${destination} Adventure`,
-      destinations: [
-        {
-          name: destination,
-          description: `Amazing ${days}-day journey through ${destination}'s highlights`,
-          imageUrl: `https://picsum.photos/800/600?random=${Math.random()}`,
-          coordinates: { lat: 40.7128 + Math.random() * 0.1, lng: -74.0060 + Math.random() * 0.1 }
-        }
-      ],
+      id: `ai-trip-${Date.now()}`,
+      name: `${days}-Day ${destination} Escape`,
+      destination: destination,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      style: travelStyle,
       budget: {
         total: budget,
-        currency: "USD",
-        breakdown: {
-          accommodation: Math.round(budget * 0.35),
-          transportation: Math.round(budget * 0.25),
-          food: Math.round(budget * 0.25),
-          activities: Math.round(budget * 0.10),
-          miscellaneous: Math.round(budget * 0.05)
-        }
+        transport: Math.round(budget * 0.25),
+        stay: Math.round(budget * 0.35),
+        food: Math.round(budget * 0.25),
+        activities: Math.round(budget * 0.15),
+        currency: "INR"
       },
-      itinerary: Array.from({ length: days }, (_, dayIndex) => ({
-        day: dayIndex + 1,
-        date: new Date(Date.now() + dayIndex * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        theme: dayIndex === 0 ? 'Arrival & Exploration' : dayIndex === days - 1 ? 'Departure & Reflection' : `Day ${dayIndex + 1} Adventures`,
-        activities: [
-          {
-            time: "09:00",
-            title: "Morning Exploration",
-            description: `Start your day with breakfast and explore ${destination}'s main attractions`,
-            location: dayIndex === 0 ? "City Center" : `${destination} Old Town`,
-            duration: "3 hours",
-            cost: Math.round(budget * 0.1),
-            type: "sightseeing",
-            tips: ["Wear comfortable shoes", "Bring camera", "Check opening hours"]
+      days: Array.from({ length: days }, (_, i) => {
+        const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+        return {
+          dayNumber: i + 1,
+          date: date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }),
+          city: destination,
+          theme: i === 0 ? "Arrival & Discovery" : i === days - 1 ? "Farewell Highlights" : "Cultural Exploration",
+          estimatedCost: Math.round(budget / days),
+          morning: [
+            {
+              id: `act-${i}-1`,
+              time: "09:00 AM",
+              name: "Morning Exploration",
+              type: "activity",
+              cost: Math.round(budget / (days * 3)),
+              duration: "2 hours",
+              location: "City Center"
+            }
+          ],
+          afternoon: [
+            {
+              id: `act-${i}-2`,
+              time: "01:00 PM",
+              name: "Authentic Local Lunch",
+              type: "food",
+              cost: Math.round(budget / (days * 4)),
+              duration: "1.5 hours",
+              location: "Historic District"
+            }
+          ],
+          evening: [
+            {
+              id: `act-${i}-3`,
+              time: "06:00 PM",
+              name: "Cultural Evening Show",
+              type: "activity",
+              cost: Math.round(budget / (days * 4)),
+              duration: "2 hours",
+              location: "Cultural Plaza"
+            }
+          ],
+          stayInfo: {
+            name: `${destination} Heritage Hotel`,
+            location: "Downtown",
+            cost: Math.round(budget / (days * 2))
           },
-          {
-            time: "13:00",
-            title: "Lunch & Local Cuisine",
-            description: `Experience authentic local dishes and specialties`,
-            location: "Recommended Restaurant District",
-            duration: "2 hours",
-            cost: Math.round(budget * 0.08),
-            type: "dining",
-            tips: ["Try local specialties", "Make reservations", "Carry cash"]
-          },
-          {
-            time: "16:00",
-            title: "Afternoon Activities",
-            description: `Engage in cultural activities and shopping`,
-            location: dayIndex % 2 === 0 ? "Museums & Galleries" : "Outdoor Adventures",
-            duration: "4 hours",
-            cost: Math.round(budget * 0.12),
-            type: "activities",
-            tips: ["Book tickets in advance", "Check group discounts"]
+          transportInfo: {
+            type: "Private Car",
+            cost: 500,
+            notes: "Comfortable and convenient"
           }
-        ]
-      })),
-      accommodations: [
+        };
+      }),
+      insights: [
         {
-          name: `${destination} Grand Hotel`,
-          type: "hotel",
-          pricePerNight: Math.round((budget * 0.35) / days),
-          rating: 4.2,
-          location: "City Center",
-          amenities: ["WiFi", "Breakfast", "Pool", "Gym", "Concierge"],
-          bookingUrl: "https://booking.example.com"
+          id: "ins-1",
+          type: "tip",
+          title: "Best Time to Visit",
+          content: "Early mornings are best to avoid crowds at main attractions."
+        },
+        {
+          id: "ins-2",
+          type: "weather",
+          title: "Weather Advice",
+          content: "The weather is pleasant this time of year, but carry a light jacket."
         }
       ],
-      transportation: {
-        flights: [
-          {
-            from: "Your City",
-            to: destination,
-            airline: "Traveloop Airlines",
-            price: Math.round(budget * 0.25),
-            duration: `${Math.floor(days / 3)}h ${30 * (days % 3)}m`,
-            bookingTips: "Book 6-8 weeks in advance for best prices"
-          }
-        ],
-        local: {
-          recommendations: ["Public transit pass", "Walking tours", "Bike rentals"],
-          estimatedCosts: {
-            publicTransit: Math.round(budget * 0.05),
-            taxi: Math.round(budget * 0.03),
-            rental: Math.round(budget * 0.07)
-          }
-        }
-      },
-      dining: [
-        {
-          name: "Local Flavors Restaurant",
-          cuisine: "Local & International",
-          priceRange: "$$",
-          mustTry: ["Signature local dishes", "Daily specials", "Local beverages"],
-          location: "Historic District",
-          reservationRequired: true
-        }
+      packingList: [
+        { id: "p1", item: "Comfortable Walking Shoes", category: "Clothing", essential: true, checked: false },
+        { id: "p2", item: "Universal Travel Adapter", category: "Electronics", essential: true, checked: false },
+        { id: "p3", item: "Sunscreen & Sunglasses", category: "Personal Care", essential: true, checked: false }
       ],
-      aiInsights: {
-        bestTimeToVisit: "Spring and Fall for pleasant weather",
-        weatherConsiderations: "Pack layers - temperatures can vary",
-        culturalTips: ["Dress modestly when visiting religious sites", "Tipping is customary", "Learn basic local phrases"],
-        budgetOptimization: ["Eat at local restaurants", "Use public transportation", "Book accommodations with breakfast"],
-        hiddenGems: ["Lesser-known viewpoints", "Local markets", "Neighborhood cafes"]
-      },
-      packingChecklist: {
-        essentials: ["Passport", "Visa (if required)", "Travel insurance", "Copies of documents"],
-        clothing: ["Weather-appropriate layers", "Comfortable walking shoes", "Formal outfit for nice restaurants"],
-        electronics: ["Universal adapter", "Portable charger", "Camera", "Smartphone"],
-        health: ["Personal medications", "Basic first-aid kit", "Hand sanitizer"],
-        documents: ["Flight tickets", "Hotel confirmations", "Emergency contacts"]
-      },
-      recommendations: {
-        activities: ["Sunrise viewpoint visit", "Cooking class", "Local market tour", "Cultural show"],
-        booking: ["Book flights 6-8 weeks ahead", "Reserve popular restaurants", "Get city tourism card"],
-        safety: ["Keep copies of documents", "Research local emergency numbers", "Share itinerary with family"],
-        money: ["Notify bank of travel dates", "Exchange some currency before arrival", "Check credit card foreign fees"]
-      }
+      coverPhoto: `https://picsum.photos/1200/600?random=${destination}`
     };
   }
 

@@ -7,11 +7,12 @@ const authMiddleware = async (req, res, next) => {
 
     if (!token) {
       return res.status(401).json({ 
-        error: 'Access denied. No token provided.' 
+        success: false,
+        message: 'Access denied. No token provided.' 
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET);
     
     // Get user from database
     const user = await prisma.user.findUnique({
@@ -26,7 +27,8 @@ const authMiddleware = async (req, res, next) => {
 
     if (!user) {
       return res.status(401).json({ 
-        error: 'Invalid token. User not found.' 
+        success: false,
+        message: 'Invalid token. User not found.' 
       });
     }
 
@@ -35,35 +37,42 @@ const authMiddleware = async (req, res, next) => {
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
-        error: 'Invalid token.' 
+        success: false,
+        message: 'Invalid token.' 
       });
     }
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ 
-        error: 'Token expired.' 
+        success: false,
+        message: 'Token expired.' 
       });
     }
     
     console.error('Auth middleware error:', error);
     res.status(500).json({ 
-      error: 'Server error in authentication.' 
+      success: false,
+      message: 'Server error in authentication.' 
     });
   }
 };
 
 // Admin middleware
 const adminMiddleware = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (req.user.role !== 'admin' && req.user.role !== 'ADMIN') {
     return res.status(403).json({ 
-      error: 'Access denied. Admin privileges required.' 
+      success: false,
+      message: 'Access denied. Admin privileges required.' 
     });
   }
   next();
 };
 
+const authenticate = authMiddleware;
+const isAdmin = adminMiddleware;
+
 module.exports = {
   authMiddleware,
-  authenticate: authMiddleware,
+  authenticate,
   adminMiddleware,
-  isAdmin: adminMiddleware
+  isAdmin
 };

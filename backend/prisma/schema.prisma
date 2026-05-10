@@ -11,11 +11,18 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  TRAVEL_AGENT
+}
+
 model User {
   id          String   @id @default(cuid())
   email       String   @unique
   name        String
   password    String
+  role        UserRole @default(CUSTOMER)
   bio         String?
   avatar      String?
   language    String   @default("english")
@@ -39,6 +46,7 @@ model Trip {
   startDate   DateTime
   endDate     DateTime
   budget      Float?
+  travelStyle String?
   coverPhoto  String?
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())

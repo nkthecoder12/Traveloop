@@ -6,19 +6,20 @@ const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const path = require('path');
 
+// Load environment variables immediately
+dotenv.config();
+
 // Import routes
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/users');
 const tripRoutes = require('./src/routes/trips');
 const searchRoutes = require('./src/routes/search');
 const adminRoutes = require('./src/routes/admin');
+const aiRoutes = require('./src/routes/ai');
 
 // Import database and error handler
 const { connectDB, disconnectDB } = require('./src/config/database');
 const errorHandler = require('./src/middleware/errorHandler');
-
-// Load environment variables
-dotenv.config();
 
 // Connect to database
 connectDB();
@@ -102,6 +103,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
