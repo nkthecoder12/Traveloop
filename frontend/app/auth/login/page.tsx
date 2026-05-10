@@ -1,14 +1,52 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/Button"
-import { Globe } from "lucide-react"
+import { Globe, Loader2 } from "lucide-react"
 import { FaGithub, FaGoogle } from "react-icons/fa6"
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Note: In a real app, use an environment variable for the API URL
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed. Please check your credentials.")
+      }
+
+      // Store user info/token if needed (though the backend uses httpOnly cookies)
+      console.log("Login successful:", data)
+      
+      // Redirect to dashboard
+      window.location.href = "/dashboard"
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
       {/* Background Image */}
@@ -48,12 +86,25 @@ export default function LoginPage() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-sky/40">Photo</p>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-medium text-center"
+            >
+              {error}
+            </motion.div>
+          )}
+
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-sky/60 ml-1">Username</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-sky/60 ml-1">Email</label>
             <input
-              type="text"
-              placeholder="Username"
+              type="email"
+              placeholder="Email address"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full h-10 px-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-xs font-medium"
             />
           </div>
@@ -63,12 +114,26 @@ export default function LoginPage() {
             <input
               type="password"
               placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full h-10 px-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-xs font-medium"
             />
           </div>
 
-          <Button className="w-full h-12 text-sm shadow-lg bg-primary hover:bg-primary/90 font-bold rounded-xl">
-            Login Button
+          <Button 
+            type="submit"
+            disabled={isLoading}
+            className="w-full h-12 text-sm shadow-lg bg-primary hover:bg-primary/90 font-bold rounded-xl flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Login"
+            )}
           </Button>
         </form>
 

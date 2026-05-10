@@ -1,206 +1,256 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useAIItinerary } from "@/hooks/useAIItinerary"
+
+// Import Components
+import { TripHero } from "@/components/itinerary/TripHero"
+import { AIInsights } from "@/components/itinerary/AIInsights"
+import { RouteFlow } from "@/components/itinerary/RouteFlow"
+import { DayTimelineCard } from "@/components/itinerary/DayTimelineCard"
+import { BudgetBreakdown } from "@/components/itinerary/BudgetBreakdown"
+import { PackingChecklist } from "@/components/itinerary/PackingChecklist"
+import { ActionButtons } from "@/components/itinerary/ActionButtons"
+import { LoadingSkeleton, GenerationLoading } from "@/components/itinerary/LoadingSkeleton"
+import { ErrorState } from "@/components/itinerary/ErrorState"
+
+// UI Imports
 import { Card, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { 
-  Sparkles, 
-  MapPin, 
-  Calendar, 
-  Wallet, 
-  Compass,
-  Plus,
-  MoreVertical,
-  X,
-  Trash2
-} from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { Sparkles, MapPin, Wallet, Clock, ArrowRight, Compass, Navigation } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export default function AIPlannerPage() {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [step, setStep] = useState(1)
+  const { itinerary, isLoading, error, generate, reset } = useAIItinerary()
+  const [preferences, setPreferences] = useState({
+    destination: "",
+    budget: "",
+    duration: "5 Days",
+    style: "Luxury"
+  })
 
-  const handleGenerate = () => {
-    setIsGenerating(true)
-    setTimeout(() => {
-      setIsGenerating(false)
-      setStep(2)
-    }, 3000)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dest = params.get('destination');
+    const budg = params.get('budget');
+    const style = params.get('style');
+
+    if (dest || budg || style) {
+      setPreferences(prev => ({
+        ...prev,
+        destination: dest || prev.destination,
+        budget: budg || prev.budget,
+        style: style || prev.style
+      }));
+    }
+  }, []);
+
+  const handleStartGeneration = () => {
+    generate({
+      destination: preferences.destination || "Kyoto, Japan",
+      budget: preferences.budget || "₹ 150,000",
+      duration: preferences.duration,
+      style: preferences.style
+    })
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-20">
-      <div className="mb-12">
-        <h1 className="text-3xl font-bold font-heading text-primary mb-2 flex items-center gap-3">
-          <Sparkles className="text-accent" /> AI Trip Architect
-        </h1>
-        <p className="text-sky/80 text-lg">Our intelligent engine will craft a bespoke itinerary just for you.</p>
-      </div>
-
+    <div className="max-w-6xl mx-auto pb-10 px-4">
       <AnimatePresence mode="wait">
-        {step === 1 ? (
+        {/* Step 1: Input Preferences */}
+        {!itinerary && !isLoading && !error && (
           <motion.div
-            key="step1"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="space-y-12"
+            key="input-form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="max-w-4xl mx-auto py-4 space-y-4"
           >
-            {/* Plan a new trip (Screen 4) */}
-            <Card className="border-none shadow-sm overflow-hidden bg-white rounded-[2rem]">
-              <CardContent className="p-8 space-y-8">
-                <div className="flex items-center gap-4 mb-2">
-                  <h2 className="text-xl font-bold font-heading text-primary whitespace-nowrap">Plan a new trip</h2>
-                  <div className="h-[1px] w-full bg-border" />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                      <label className="text-xs font-bold uppercase tracking-widest text-sky/60">Select a Place :</label>
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="Enter destination..." 
-                      className="w-full h-12 px-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-sm font-medium"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                      <label className="text-xs font-bold uppercase tracking-widest text-sky/60">Budget :</label>
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. ₹50,000" 
-                      className="w-full h-12 px-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-sm font-medium"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                      <label className="text-xs font-bold uppercase tracking-widest text-sky/60">Start Date :</label>
-                    </div>
-                    <input 
-                      type="date" 
-                      className="w-full h-12 px-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-sm font-medium"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                      <label className="text-xs font-bold uppercase tracking-widest text-sky/60">End Date :</label>
-                    </div>
-                    <input 
-                      type="date" 
-                      className="w-full h-12 px-4 rounded-xl border border-border focus:outline-none focus:border-accent bg-muted/30 text-sm font-medium"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Suggestions (Screen 4) */}
-            <div className="space-y-8">
-              <div className="flex items-center gap-4 mb-2">
-                <h2 className="text-xl font-bold font-heading text-primary whitespace-nowrap">Suggestion for Places to Visit/Activities to perform</h2>
-                <div className="h-[1px] w-full bg-border" />
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto text-accent shadow-lg mb-2">
+                <Sparkles size={20} className="animate-pulse" />
               </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {[
-                  { name: "Scuba Diving", img: "/images/hero.png" },
-                  { name: "Local Market", img: "/images/paris.png" },
-                  { name: "Beach Sunset", img: "/images/tokyo.png" },
-                  { name: "Ancient Temple", img: "/images/santorini.png" },
-                  { name: "Night Safari", img: "/images/hero.png" },
-                  { name: "Street Food Tour", img: "/images/paris.png" },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ scale: 1.05 }}
-                    className="aspect-square rounded-[2rem] overflow-hidden relative shadow-sm group cursor-pointer"
-                  >
-                    <Image src={item.img} alt={item.name} fill className="object-cover transition-transform group-hover:scale-110" />
-                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors" />
-                    <div className="absolute inset-0 flex items-center justify-center p-4">
-                       <span className="text-white font-bold text-center drop-shadow-md">{item.name}</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <h1 className="text-2xl font-black font-heading text-primary tracking-tight">AI Trip Architect</h1>
+              <p className="text-sky/60 text-xs max-w-sm mx-auto font-medium">
+                Unlock bespoke journeys designed by our advanced neural planning engine.
+              </p>
             </div>
 
-            <div className="flex justify-center pt-8">
-              <Button 
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="h-16 px-16 text-lg shadow-xl relative overflow-hidden bg-primary hover:bg-primary/90"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    Generate My Itinerary <Sparkles className="ml-2 w-5 h-5" />
-                  </>
-                )}
-              </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+               <Card className="border-none shadow-xl rounded-2xl bg-white p-6 space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/30 flex items-center gap-2">
+                       <Navigation size={10} className="text-accent" /> Destination
+                    </label>
+                    <div className="relative">
+                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-accent" />
+                       <input 
+                         type="text" 
+                         placeholder="Where do you want to explore?"
+                         value={preferences.destination}
+                         onChange={(e) => setPreferences({...preferences, destination: e.target.value})}
+                         className="w-full h-12 pl-12 pr-4 rounded-xl bg-muted/30 border-2 border-transparent focus:border-accent focus:bg-white transition-all text-sm font-bold text-primary"
+                       />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/30 flex items-center gap-2">
+                         <Wallet size={10} className="text-accent" /> Budget
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="₹ 50,000"
+                        value={preferences.budget}
+                        onChange={(e) => setPreferences({...preferences, budget: e.target.value})}
+                        className="w-full h-10 px-4 rounded-xl bg-muted/30 border-2 border-transparent focus:border-accent focus:bg-white transition-all text-[10px] font-bold text-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/30 flex items-center gap-2">
+                         <Clock size={10} className="text-accent" /> Duration
+                      </label>
+                      <select 
+                        value={preferences.duration}
+                        onChange={(e) => setPreferences({...preferences, duration: e.target.value})}
+                        className="w-full h-10 px-4 rounded-xl bg-muted/30 border-2 border-transparent focus:border-accent focus:bg-white transition-all text-[10px] font-bold text-primary appearance-none"
+                      >
+                         <option>3 Days</option>
+                         <option>5 Days</option>
+                         <option>7 Days</option>
+                         <option>10+ Days</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/30 flex items-center gap-2">
+                       <Compass size={10} className="text-accent" /> Style
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                       {["Luxury", "Budget", "Adventure", "Solo", "Family", "Couple"].map((style) => (
+                         <div 
+                           key={style}
+                           onClick={() => setPreferences({...preferences, style})}
+                           className={cn(
+                             "h-9 rounded-lg flex items-center justify-center text-[8px] font-black uppercase tracking-widest cursor-pointer border-2 transition-all",
+                             preferences.style === style 
+                               ? "bg-primary text-white border-primary shadow-sm" 
+                               : "bg-muted/30 text-primary/40 border-transparent hover:bg-muted/50"
+                           )}
+                         >
+                           {style}
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleStartGeneration}
+                    className="w-full h-12 rounded-xl bg-accent text-primary font-black text-xs shadow-md hover:scale-[1.01] transition-all"
+                  >
+                     Design Journey <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+               </Card>
+
+               <div className="space-y-4 flex flex-col justify-center">
+                  <div className="bg-primary rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 w-24 h-24 bg-accent/20 rounded-full -mr-8 -mt-8 blur-[40px] group-hover:scale-110 transition-transform" />
+                     <h3 className="text-lg font-bold font-heading mb-4 relative z-10">The Neural Edge</h3>
+                     <ul className="space-y-4 relative z-10">
+                        <li className="flex items-start gap-3">
+                           <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-accent shrink-0 border border-white/10">
+                              <Sparkles size={12} />
+                           </div>
+                           <div>
+                              <p className="font-bold text-white text-xs">Global Intelligence</p>
+                              <p className="text-[9px] text-white/50 leading-relaxed font-medium">10k+ sources for authentic experiences.</p>
+                           </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                           <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-accent shrink-0 border border-white/10">
+                              <Compass size={12} />
+                           </div>
+                           <div>
+                              <p className="font-bold text-white text-xs">Logistics Optimization</p>
+                              <p className="text-[9px] text-white/50 leading-relaxed font-medium">Minimize transit and maximize memories.</p>
+                           </div>
+                        </li>
+                     </ul>
+                  </div>
+               </div>
             </div>
           </motion.div>
-        ) : (
+        )}
+
+        {/* Step 2: Generation Loading */}
+        {isLoading && (
           <motion.div
-            key="step2"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-8"
+            key="generation-loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            {/* Build Itinerary Screen (Screen 5) */}
-            <div className="flex items-center justify-between mb-8">
-               <h2 className="text-2xl font-bold font-heading text-primary">Build Itinerary Screen</h2>
-               <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setStep(1)} className="h-10 border-border">Back</Button>
-                  <Button className="h-10 bg-accent text-primary hover:bg-accent/90 border-none font-bold">Save Trip</Button>
+            <GenerationLoading />
+          </motion.div>
+        )}
+
+        {/* Step 3: Error State */}
+        {error && (
+          <motion.div
+            key="error-state"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ErrorState message={error} onRetry={handleStartGeneration} />
+          </motion.div>
+        )}
+
+        {/* Step 4: Final Itinerary Dashboard */}
+        {itinerary && !isLoading && (
+          <motion.div
+            key="itinerary-dashboard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-8 py-8"
+          >
+            <TripHero itinerary={itinerary} />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+               {/* Main Timeline Column */}
+               <div className="lg:col-span-2 space-y-8">
+                  <RouteFlow cities={itinerary.days.map(d => d.city)} />
+                  
+                  <div className="space-y-8">
+                    <div className="flex items-center justify-between px-4">
+                       <h2 className="text-2xl font-black font-heading text-primary tracking-tight">Timeline Schedule</h2>
+                       <div className="flex gap-2">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-sky/40 bg-muted px-3 py-1 rounded-full">30+ Activities</span>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-sky/40 bg-muted px-3 py-1 rounded-full">Optimized</span>
+                       </div>
+                    </div>
+                    <div className="space-y-6">
+                       {itinerary.days.map((day, idx) => (
+                         <DayTimelineCard key={day.dayNumber} day={day} isInitiallyExpanded={idx === 0} />
+                       ))}
+                    </div>
+                  </div>
+               </div>
+
+               {/* Sticky Insights Sidebar */}
+               <div className="space-y-8">
+                  <div className="sticky top-24 space-y-8">
+                    <BudgetBreakdown budget={itinerary.budget} />
+                    <AIInsights insights={itinerary.insights} />
+                    <PackingChecklist items={itinerary.packingList} />
+                  </div>
                </div>
             </div>
 
-            <div className="space-y-6">
-               {[1, 2, 3].map((num) => (
-                 <Card key={num} className="border-none shadow-sm bg-white rounded-3xl group hover:border-accent/50 border border-transparent transition-all">
-                    <CardContent className="p-8">
-                       <div className="flex justify-between items-start mb-6">
-                          <div>
-                             <h3 className="text-xl font-bold text-primary mb-2">Section {num}:</h3>
-                             <p className="text-sky/60 text-sm">All the necessary information about this section. This can be anything like travel section, hotel or any other activity.</p>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-10 w-10 text-sky/40 hover:text-red-500"><Trash2 size={20} /></Button>
-                       </div>
-                       
-                       <div className="flex flex-col md:flex-row gap-6">
-                          <div className="flex-1 space-y-2">
-                             <label className="text-xs font-bold uppercase tracking-widest text-sky/60 ml-1">Date Range:</label>
-                             <div className="h-12 flex items-center px-4 rounded-xl bg-muted/50 border border-border text-sm font-medium text-primary">
-                                xxx to yyy
-                             </div>
-                          </div>
-                          <div className="flex-1 space-y-2">
-                             <label className="text-xs font-bold uppercase tracking-widest text-sky/60 ml-1">Budget of this section:</label>
-                             <div className="h-12 flex items-center px-4 rounded-xl bg-muted/50 border border-border text-sm font-medium text-primary">
-                                ₹ 12,000
-                             </div>
-                          </div>
-                       </div>
-                    </CardContent>
-                 </Card>
-               ))}
-            </div>
-
-            <div className="flex justify-center pt-8">
-               <Button className="h-14 px-10 bg-white border-2 border-dashed border-border text-primary hover:border-accent hover:bg-accent/5 font-bold rounded-2xl flex items-center gap-3">
-                  <Plus className="text-accent" /> Add another Section
-               </Button>
-            </div>
+            <ActionButtons />
           </motion.div>
         )}
       </AnimatePresence>

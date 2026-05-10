@@ -56,9 +56,9 @@ const features = [
 ]
 
 const destinations = [
-  { name: "Leh Ladakh, India", image: "/images/hero.png", budget: "₹45,000+", rating: 4.9, season: "Summer" },
-  { name: "Munnar, Kerala", image: "/images/paris.png", budget: "₹25,000+", rating: 4.8, season: "Monsoon" },
-  { name: "Jaipur, Rajasthan", image: "/images/tokyo.png", budget: "₹35,000+", rating: 5.0, season: "Winter" },
+  { name: "Leh Ladakh, India", image: "/images/ladakh.png", budget: "₹45,000+", rating: 4.9, season: "Summer" },
+  { name: "Munnar, Kerala", image: "/images/kerala.png", budget: "₹25,000+", rating: 4.8, season: "Monsoon" },
+  { name: "Jaipur, Rajasthan", image: "/images/jaipur.png", budget: "₹35,000+", rating: 5.0, season: "Winter" },
 ]
 
 const testimonials = [
@@ -151,9 +151,9 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
               {[
-                { name: "North India", img: "/images/hero.png" },
-                { name: "South India", img: "/images/paris.png" },
-                { name: "West India", img: "/images/tokyo.png" },
+                { name: "North India", img: "/images/ladakh.png" },
+                { name: "South India", img: "/images/kerala.png" },
+                { name: "West India", img: "/images/jaipur.png" },
                 { name: "East India", img: "/images/santorini.png" },
                 { name: "Central India", img: "/images/hero.png" },
               ].map((region, i) => (

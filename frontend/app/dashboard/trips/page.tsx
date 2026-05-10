@@ -77,10 +77,12 @@ export default function TripsPage() {
           <h1 className="text-3xl font-bold font-heading text-primary mb-2">My Trips</h1>
           <p className="text-sky/80">Manage your journeys and plan your next adventures.</p>
         </div>
-        <Button className="h-12 px-6 rounded-xl shadow-lg">
-          <Plus className="w-4 h-4 mr-2" />
-          Create New Trip
-        </Button>
+        <Link href="/dashboard/trips/create">
+          <Button className="h-12 px-6 rounded-xl shadow-lg">
+            <Plus className="w-4 h-4 mr-2" />
+            Create New Trip
+          </Button>
+        </Link>
       </div>
 
       {/* Search & Filter Bar (Screen 6) */}
