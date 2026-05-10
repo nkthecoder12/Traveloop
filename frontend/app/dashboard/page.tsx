@@ -19,7 +19,8 @@ import {
   Sparkles,
   Search,
   Bell,
-  Settings
+  Settings,
+  User
 } from "lucide-react"
 import Link from "next/link"
 import { 
@@ -123,8 +124,8 @@ export default function DashboardPage() {
               </Link>
               <div className="flex -space-x-3">
                  {[1,2,3].map(i => (
-                   <div key={i} className="w-10 h-10 rounded-full border-2 border-primary bg-sky/20 overflow-hidden">
-                      <img src={`https://i.pravatar.cc/100?u=${i}`} alt="Avatar" />
+                   <div key={i} className="w-10 h-10 rounded-full border-2 border-primary bg-sky/20 flex items-center justify-center overflow-hidden">
+                      <User size={16} className="text-sky/60" />
                    </div>
                  ))}
                  <div className="w-10 h-10 rounded-full border-2 border-primary bg-accent flex items-center justify-center text-primary font-black text-[10px]">

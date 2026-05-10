@@ -6,21 +6,21 @@ import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { 
-  LayoutDashboard, 
-  Map, 
-  Sparkles, 
-  Wallet, 
-  Backpack, 
-  Users, 
-  StickyNote, 
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Globe,
+  User, 
+  Sparkles,
   Bell,
   Search,
-  User
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  Map,
+  Wallet,
+  Backpack,
+  Users,
+  StickyNote,
+  Settings
 } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 const sidebarLinks = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -40,6 +40,7 @@ export default function DashboardLayout({
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
+  const { user } = useAuth()
 
   return (
     <div className="flex h-screen bg-[#F8FAFC]">
@@ -80,7 +81,7 @@ export default function DashboardLayout({
                   "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group relative",
                   isActive 
                     ? "bg-accent text-primary font-bold shadow-[0_4px_12px_rgba(23,199,209,0.3)]" 
-                    : "text-sky/60 hover:bg-white/5 hover:text-white"
+                    : "text-sky/60 hover:bg-white/50 hover:text-white"
                 )}
               >
                 <link.icon className={cn("w-5 h-5 shrink-0", isActive ? "text-primary" : "group-hover:text-accent")} />
@@ -138,11 +139,19 @@ export default function DashboardLayout({
             <div className="h-8 w-[1px] bg-border mx-2" />
             <div className="flex items-center gap-3 cursor-pointer group">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-primary group-hover:text-accent transition-colors">Alex Johnson</p>
-                <p className="text-[10px] text-sky/60 font-bold uppercase tracking-wider">Premium Member</p>
+                <p className="text-sm font-bold text-primary group-hover:text-accent transition-colors">
+                  {user?.name || "Guest User"}
+                </p>
+                <p className="text-[10px] text-sky/60 font-bold uppercase tracking-wider">
+                  {user?.role || "Traveler"}
+                </p>
               </div>
               <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center overflow-hidden">
-                <img src="https://i.pravatar.cc/150?u=alex" alt="Avatar" className="w-full h-full object-cover" />
+                <img 
+                  src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "U")}&background=17C7D1&color=fff`} 
+                  alt="Avatar" 
+                  className="w-full h-full object-cover" 
+                />
               </div>
             </div>
           </div>

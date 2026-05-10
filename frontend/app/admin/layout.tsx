@@ -166,8 +166,8 @@ export default function AdminLayout({
                 <p className="text-sm font-black text-[#28545B]">Commander Root</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level 10 Admin</p>
               </div>
-              <div className="w-11 h-11 rounded-2xl bg-[#28545B] border-4 border-slate-50 overflow-hidden shadow-lg shadow-[#28545B]/10">
-                <img src="https://i.pravatar.cc/100?u=admin" alt="Admin" className="w-full h-full object-cover" />
+              <div className="w-11 h-11 rounded-2xl bg-[#28545B] border-4 border-slate-50 flex items-center justify-center shadow-lg shadow-[#28545B]/10">
+                <ShieldCheck size={24} className="text-[#17C7D1]" />
               </div>
             </div>
           </div>

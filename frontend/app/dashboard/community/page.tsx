@@ -24,7 +24,7 @@ const publicTrips = [
   {
     id: 1,
     user: "Priya Sharma",
-    avatar: "https://i.pravatar.cc/150?u=priya",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&h=150&auto=format&fit=crop",
     title: "Spiritual Varanasi: 3 Day Guide",
     location: "Uttar Pradesh, India",
     rating: 4.9,
@@ -36,7 +36,7 @@ const publicTrips = [
   {
     id: 2,
     user: "Arjun Mehta",
-    avatar: "https://i.pravatar.cc/150?u=arjun",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&h=150&auto=format&fit=crop",
     title: "The Ultimate Goa Beach Guide",
     location: "Goa, India",
     rating: 4.8,
@@ -48,7 +48,7 @@ const publicTrips = [
   {
     id: 3,
     user: "Ananya Iyer",
-    avatar: "https://i.pravatar.cc/150?u=ananya",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&h=150&auto=format&fit=crop",
     title: "Kerala Backwaters & Tea Gardens",
     location: "Kerala, India",
     rating: 5.0,
@@ -60,7 +60,7 @@ const publicTrips = [
   {
     id: 4,
     user: "Vikram Singh",
-    avatar: "https://i.pravatar.cc/150?u=vikram",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=150&h=150&auto=format&fit=crop",
     title: "Royal Jaipur: Forts & Palaces",
     location: "Rajasthan, India",
     rating: 4.7,

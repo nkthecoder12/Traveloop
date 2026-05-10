@@ -63,16 +63,16 @@ const destinations = [
 
 const testimonials = [
   {
-    name: "Alex Johnson",
+    name: "Aravind Kumar",
     role: "Solo Traveler",
     content: "Traveloop transformed how I plan my trips. The AI suggestions were spot on for my Tokyo adventure!",
-    image: "https://i.pravatar.cc/150?u=alex",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&h=150&auto=format&fit=crop",
   },
   {
     name: "Sarah Miller",
     role: "Digital Nomad",
     content: "The budget tracking is a lifesaver. I can finally see where my money goes while traveling the world.",
-    image: "https://i.pravatar.cc/150?u=sarah",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&h=150&auto=format&fit=crop",
   },
 ]
 

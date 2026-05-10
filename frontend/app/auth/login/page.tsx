@@ -6,7 +6,7 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
-import { Globe, Loader2 } from "lucide-react"
+import { Globe, Loader2, User } from "lucide-react"
 import { FaGithub, FaGoogle } from "react-icons/fa6"
 import { useAuth } from "@/contexts/AuthContext"
 
@@ -60,12 +60,12 @@ export default function LoginPage() {
           <p className="text-sky/60 text-sm text-center">Log in to start planning your next escape.</p>
         </div>
 
-        {/* Compact Photo Placeholder */}
+        {/* User Icon Placeholder */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-20 h-20 rounded-full bg-muted border-2 border-white shadow-lg flex items-center justify-center mb-2 relative group overflow-hidden">
-            <img src="https://i.pravatar.cc/150?u=alex" alt="Avatar" className="w-full h-full object-cover" />
+            <User className="w-10 h-10 text-sky/40" />
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-sky/40">Photo</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-sky/40">Traveloop User</p>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>

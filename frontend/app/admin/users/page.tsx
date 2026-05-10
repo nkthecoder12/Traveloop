@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Mail,
-  UserCheck
+  UserCheck,
+  User
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
@@ -100,8 +101,8 @@ export default function UserManagementPage() {
                     <tr key={user.id} className="group hover:bg-slate-50/30 transition-colors">
                        <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
-                             <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden shrink-0">
-                                <img src={`https://i.pravatar.cc/100?u=${user.id}`} alt={user.name} />
+                             <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                <User size={20} className="text-slate-300" />
                              </div>
                              <div>
                                 <p className="text-sm font-black text-[#28545B] group-hover:text-[#17C7D1] transition-colors">{user.name}</p>
