@@ -1,0 +1,342 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Enums for better type safety
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  TRAVEL_AGENT
+}
+
+enum TripStatus {
+  PLANNING
+  BOOKED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ActivityType {
+  SIGHTSEEING
+  DINING
+  ACCOMMODATION
+  TRANSPORTATION
+  ENTERTAINMENT
+  SHOPPING
+  OUTDOOR
+  CULTURAL
+  RELAXATION
+}
+
+enum BudgetLevel {
+  BUDGET
+  MODERATE
+  LUXURY
+}
+
+enum PrivacyLevel {
+  PUBLIC
+  FRIENDS_ONLY
+  PRIVATE
+}
+
+enum Continent {
+  AFRICA
+  ASIA
+  EUROPE
+  NORTH_AMERICA
+  SOUTH_AMERICA
+  OCEANIA
+  ANTARCTICA
+}
+
+// User model with enhanced fields
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String
+  role          UserRole  @default(CUSTOMER)
+  bio           String?
+  avatar         String?
+  language      String    @default("english")
+  privacy       PrivacyLevel @default(PUBLIC)
+  notifications Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  trips                Trip[]
+  notes                Note[]
+  refreshTokens        RefreshToken[]
+  favoriteDestinations  FavoriteDestination[]
+  sharedTrips          SharedTrip[] @relation("SharedBy")
+  receivedSharedTrips  SharedTrip[] @relation("SharedWith")
+
+  @@map("users")
+}
+
+// Refresh token model for JWT rotation
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// Country model for normalized destinations
+model Country {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  code        String     @unique @db.VarChar(2))
+  currency    String     @db.VarChar(3))
+  continent   Continent
+  description String?
+  imageUrl    String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  cities City[]
+
+  @@index([code])
+  @@index([continent])
+  @@map("countries")
+}
+
+// City model with enhanced fields
+model City {
+  id              String      @id @default(cuid())
+  name            String
+  countryId        String
+  description     String?
+  averageBudget   Float?
+  popularityScore Int         @default(50)
+  imageUrl        String?
+  coordinates     Json?        // {lat: number, lng: number}
+  bestTimeToVisit String?
+  climate         String?
+  timezone        String?
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  trips   Trip[]
+
+  @@unique([name, countryId])
+  @@index([countryId])
+  @@index([popularityScore])
+  @@map("cities")
+}
+
+// Enhanced Trip model
+model Trip {
+  id             String      @id @default(cuid())
+  name           String
+  description     String?
+  startDate      DateTime
+  endDate        DateTime
+  budget         Float?
+  budgetLevel    BudgetLevel?
+  coverPhoto     String?
+  isPublic       Boolean     @default(false)
+  status         TripStatus   @default(PLANNING)
+  travelStyle    String?     // e.g., "adventure", "relaxation", "cultural"
+  travelersCount Int         @default(1)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  destinationCityId String?
+  destinationCity   City?       @relation(fields: [destinationCityId], references: [id])
+  
+  stops          TripStop[]
+  notes          Note[]
+  packingItems   PackingItem[]
+  budget         Budget?
+  sharedUrls     SharedUrl[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([destinationCityId])
+  @@map("trips")
+}
+
+// Trip stop model
+model TripStop {
+  id          String   @id @default(cuid())
+  city        String
+  country     String
+  startDate   DateTime
+  endDate     DateTime
+  order       Int
+  description String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tripId      String
+  trip        Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  activities  Activity[]
+
+  @@index([tripId])
+  @@index([order])
+  @@map("trip_stops")
+}
+
+// Enhanced Activity model
+model Activity {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  type        ActivityType
+  duration    String?
+  cost        Float?
+  time        String?
+  date        DateTime?
+  location    String?
+  bookingUrl  String?
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  stopId      String?
+  stop        TripStop?    @relation(fields: [stopId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([date])
+  @@map("activities")
+}
+
+// Budget model for detailed trip budgeting
+model Budget {
+  id               String   @id @default(cuid())
+  totalAmount      Float
+  currency         String   @default("USD")
+  accommodation    Float?
+  transportation  Float?
+  food            Float?
+  activities       Float?
+  shopping        Float?
+  miscellaneous   Float?
+  emergencyFund   Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  tripId String @unique
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("budgets")
+}
+
+// Enhanced Packing Item model
+model PackingItem {
+  id          String   @id @default(cuid())
+  name        String
+  quantity    Int      @default(1)
+  packed      Boolean  @default(false)
+  category    String   // e.g., "clothing", "toiletries", "electronics"
+  priority    String?  // "high", "medium", "low"
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([category])
+  @@map("packing_items")
+}
+
+// Note model for trip notes
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId String?
+  user   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tripId String?
+  trip   Trip? @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tripId])
+  @@map("notes")
+}
+
+// Favorite destination model
+model FavoriteDestination {
+  id         String   @id @default(cuid())
+  userId     String
+  cityId     String
+  notes      String?
+  visitDate  DateTime?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cityId])
+  @@map("favorite_destinations")
+}
+
+// Shared trip model for collaboration
+model SharedUrl {
+  id           String   @id @default(cuid())
+  url          String   @unique
+  token        String   @unique
+  expiresAt    DateTime
+  accessCount  Int      @default(0)
+  maxAccess    Int      @default(1)
+  canEdit      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  tripId String
+  sharedByUserId String
+  sharedWithUserId String?
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  sharedBy User @relation("SharedBy", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+  sharedWith User? @relation("SharedWith", fields: [sharedWithUserId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([expiresAt])
+  @@map("shared_urls")
+}

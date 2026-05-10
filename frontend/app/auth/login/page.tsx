@@ -4,46 +4,28 @@ import React, { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Globe, Loader2 } from "lucide-react"
 import { FaGithub, FaGoogle } from "react-icons/fa6"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function LoginPage() {
+  const router = useRouter()
+  const { login, isLoading, error, clearError } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    clearError()
 
     try {
-      // Note: In a real app, use an environment variable for the API URL
-      const response = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Login failed. Please check your credentials.")
-      }
-
-      // Store user info/token if needed (though the backend uses httpOnly cookies)
-      console.log("Login successful:", data)
-      
-      // Redirect to dashboard
-      window.location.href = "/dashboard"
+      await login({ email, password })
+      router.push("/dashboard")
     } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setIsLoading(false)
+      // Error is handled by the auth context
+      console.error("Login error:", err)
     }
   }
 
